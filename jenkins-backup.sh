@@ -13,7 +13,7 @@ readonly TMP_DIR="${CUR_DIR}/tmp"
 readonly ARC_NAME="jenkins-backup"
 readonly ARC_DIR="${TMP_DIR}/${ARC_NAME}"
 readonly TMP_TAR_NAME="${TMP_DIR}/archive.tar.gz"
-
+readonly S3_BUCKET="jenkins_backup"
 
 function usage() {
   echo "usage: $(basename $0) /path/to/jenkins_home archive.tar.gz"
@@ -45,6 +45,9 @@ function backup_jobs() {
   fi
 }
 
+function move2s3() {
+  awscli cp "${DEST_FILE}" s3://"${S3_BUCKET}"
+}
 
 function cleanup() {
   rm -rf "${ARC_DIR}"
@@ -91,7 +94,7 @@ function main() {
   tar -czvf "${TMP_TAR_NAME}" "${ARC_NAME}/"*
   cd -
   mv -f "${TMP_TAR_NAME}" "${DEST_FILE}"
-
+  move2s3
   cleanup
 
   exit 0
